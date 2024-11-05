@@ -1,67 +1,135 @@
 const express = require ("express")
 const connectDb = require("./config/dbConnection")
+const mongoose=require("mongoose")
 const errorHandler = require("./middleware/errorHandler")
+const hbs = require("hbs");
 const cors = require("cors")
+const multer  = require('multer')
+const upload = multer({ dest: 'uploads/' })
+//env file config
+const dotenv=require("dotenv")
+dotenv.config();
 
-// partials
-const hbs = require("hbs")
-hbs.registerPartials(__dirname + '/views/partials', function(err){}) // path to your directory
 
-// env file config
-const dotenv = require("dotenv")
-dotenv.config()
 
 connectDb()
+
+
 const app = express()
 const port = process.env.PORT || 5000
+
+
+hbs.registerPartials(__dirname + '/views/partials'); // Path to your partials
+
 
 app.use(express.json())
 app.use(cors())
 
-app.use("/api/user", require("./routes/userRoutes"))
+app.use("/api/user",require("./routes/userRoutes"))
+app.use("/api/doctors", require("./routes/doctorRoutes"));
+app.post('/profile', upload.single('avatar'), function (req, res, next) {
+    console.log(req.body);
+    console.log(req.file);
+    return res.redirect("/home");
+    // req.file is the avatar file
+    // req.body will hold the text fields, if there were any
+  })
+
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+      cb(null, './uploads')
+    },
+    filename: function (req, file, cb) {
+      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
+      cb(null, file.fieldname + '-' + uniqueSuffix)
+    }
+  })
+  
+  const uploads = multer({ storage: storage })
 
 
-app.use("/api/doctor", require("./routes/doctorRoutes"))
-
-// app.post("/api",(req,res)=>{
-//     const {name}=req.body
-//     res.send(name)
-// })
-
-
-
-
-app.get("/", (req,res)=>{
-    res.send("Hello World")
-})
-
-app.set('view engine', 'hbs')
-
-
-
-app.get("/home", (req,res) => {
-    res.render("home", {
-        username: "Harshit",
-        hosts: "Whats up brother"
-    })
-})
-
-app.get("/users", (req, res) => {
-    const users = [
-        { username: "Harshit", hosts: "What's up brother" },
-        { username: "Alice", hosts: "Hello Alice!" },
-        { username: "Bob", hosts: "Hey Bob!" }
-    ];
-
-    res.render("users", { users });
-});
-
-
-
+app.set("view engine", "hbs");
 
 app.use(errorHandler)
 
-app.listen(port, ()=>{
-    console.log(`Server is running on port ${port}`)
+
+
+app.get("/home",(req,res)=>{
+
+    res.render("home",{ //"home" will fetch the file named "home.hbs" from views folder
+
+    })
 })
 
+
+app.get("/allusers",(req,res)=>{
+    res.render("users",{
+
+        people:[
+            {
+                username:"himansh",
+                age:20
+            },
+            {
+                username:"mahajan",
+                age:21
+            }
+        ]
+
+    })
+})
+
+
+app.listen(port, ()=>{
+    console.log("Server is running on port 3001")
+})
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// mongoose.connect('mongodb://127.0.0.1:27017/HealthCare System', {
+//     useNewUrlParser: true,
+//     useUnifiedTopology: true
+// });
+
+
+// const mySchema=new mongoose.Schema({
+//     name:String,
+//     age:Number
+// })
+
+// const User= mongoose.model('User',mySchema)
+// app.get("/", (req,res)=>{
+//     res.send("Hello World")
+// })
