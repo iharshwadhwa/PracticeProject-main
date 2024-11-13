@@ -1,14 +1,23 @@
-const express = require("express")
-const router = express.Router()
+const express = require("express");
+const router = express.Router();
+const validateToken = require("../middleware/jwtMiddlewares").validateToken;
+
 
 const {
-    userRegister,
-    loginUser
-} = require("../controllers/userController")
+    registerUser,
+    loginUser,
+    userProfile,
+    updateUser
+} = require("../controllers/userController");
+const { generateToken } = require("../middleware/jwtMiddlewares");
 
-router.post("/register", userRegister)
+router.post("/register", registerUser);
+router.post("/login" ,loginUser);
 
-// router.post("/login", loginUser)
 
-module.exports = router
+// Protect /profile route with validateToken middleware
+router.get("/profile", validateToken,userProfile);
+router.put("/updateuserprofile",updateUser);
 
+
+module.exports = router;
